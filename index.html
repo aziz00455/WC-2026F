@@ -54,6 +54,10 @@
   <div id="message"></div>
 </div>
 
+<script>
+  window.global = window;
+  window.process = window.process || { env: {} };
+</script>
 
 <!-- ✅ SIMPLE FIREBASE (NO MODULES) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
