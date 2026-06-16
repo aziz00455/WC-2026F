@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Cross Directory JS</title>
+</head>
+<body>
+
+<h1>Test Page</h1>
+<div id="output"></div>
+
+<!-- IMPORTANT: correct relative path -->
+<script src="../WC_Common/test.js"></script>
+
+<script>
+    // verify JS loaded
+    if (typeof testFunction === "function") {
+        document.getElementById("output").innerText = testFunction();
+    } else {
+        document.getElementById("output").innerText = "❌ Failed to load test.js";
+    }
+</script>
+
+</body>
+</html>
