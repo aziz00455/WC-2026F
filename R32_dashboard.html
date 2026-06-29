@@ -2,26 +2,388 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WC 2026 - Knockout Bracket</title>
+  <title>WC 2026 - Knockout Dashboard</title>
 
   <link rel="stylesheet" href="../WC_common/R32_styles.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1400px;
+      height: 680px;
+      overflow: hidden;
+      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      color: #222;
+    }
+
+    body {
+      min-height: 0;
+      line-height: 1.4;
+      padding-top: 0 !important;
+    }
+
+    .dashboard {
+      position: relative;
+      width: 1400px;
+      height: 680px;
+      padding: 18px 6px 6px 6px;
+      background: #f4f4f4;
+      overflow: hidden;
+    }
+
+    .last-update {
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      font-size: 10px;
+      color: #666;
+      font-weight: 500;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    #bracketApp {
+      position: relative !important;
+      width: 1388px;
+      height: 656px;
+      overflow: visible;
+    }
+
+    .bracket-scroll {
+      position: relative !important;
+      z-index: 2;
+      width: 1388px !important;
+      max-width: none !important;
+      height: 656px !important;
+      min-height: 656px !important;
+      max-height: 656px !important;
+      overflow: hidden !important;
+      padding-bottom: 0 !important;
+      scrollbar-width: none;
+    }
+
+    .bracket-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .bracket-board {
+      display: grid !important;
+      grid-template-columns: repeat(9, 148px) !important;
+      column-gap: 7px !important;
+      row-gap: 0 !important;
+      width: 1388px !important;
+      min-width: 1388px !important;
+      height: 656px !important;
+      min-height: 656px !important;
+      align-items: stretch !important;
+      overflow: visible !important;
+    }
+
+    .bracket-lane {
+      width: 148px !important;
+      flex: none !important;
+      min-width: 0 !important;
+      height: 656px !important;
+      min-height: 656px !important;
+      overflow: visible !important;
+    }
+
+    .bracket-lane-title,
+    .bracket-last-updated,
+    .bracket-nav-btn {
+      display: none !important;
+    }
+
+    .bracket-lane-cards {
+      position: relative !important;
+      display: block !important;
+      width: 148px !important;
+      height: 656px !important;
+      min-height: 656px !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      gap: 0 !important;
+      transition: none !important;
+      overflow: visible !important;
+    }
+
+    .bracket-lane-cards > .match-card {
+      position: absolute !important;
+      left: 0 !important;
+      width: 148px !important;
+      height: 76px !important;
+      min-height: 76px !important;
+      max-height: 76px !important;
+      margin: 0 !important;
+      z-index: 5;
+    }
+
+    /* Round of 32 */
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(1),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(1) {
+      top: 10px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(2),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(2) {
+      top: 90px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(3),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(3) {
+      top: 170px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(4),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(4) {
+      top: 250px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(5),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(5) {
+      top: 330px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(6),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(6) {
+      top: 410px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(7),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(7) {
+      top: 490px;
+    }
+
+    .tv-left-r32 .bracket-lane-cards > .match-card:nth-child(8),
+    .tv-right-r32 .bracket-lane-cards > .match-card:nth-child(8) {
+      top: 570px;
+    }
+
+    /* Round of 16 */
+    .tv-left-r16 .bracket-lane-cards > .match-card:nth-child(1),
+    .tv-right-r16 .bracket-lane-cards > .match-card:nth-child(1) {
+      top: 50px;
+    }
+
+    .tv-left-r16 .bracket-lane-cards > .match-card:nth-child(2),
+    .tv-right-r16 .bracket-lane-cards > .match-card:nth-child(2) {
+      top: 210px;
+    }
+
+    .tv-left-r16 .bracket-lane-cards > .match-card:nth-child(3),
+    .tv-right-r16 .bracket-lane-cards > .match-card:nth-child(3) {
+      top: 370px;
+    }
+
+    .tv-left-r16 .bracket-lane-cards > .match-card:nth-child(4),
+    .tv-right-r16 .bracket-lane-cards > .match-card:nth-child(4) {
+      top: 530px;
+    }
+
+    /* Quarter-finals */
+    .tv-left-qf .bracket-lane-cards > .match-card:nth-child(1),
+    .tv-right-qf .bracket-lane-cards > .match-card:nth-child(1) {
+      top: 130px;
+    }
+
+    .tv-left-qf .bracket-lane-cards > .match-card:nth-child(2),
+    .tv-right-qf .bracket-lane-cards > .match-card:nth-child(2) {
+      top: 450px;
+    }
+
+    /* Semi-finals */
+    .tv-left-sf .bracket-lane-cards > .match-card:nth-child(1),
+    .tv-right-sf .bracket-lane-cards > .match-card:nth-child(1) {
+      top: 290px;
+    }
+
+    /* Final */
+    .tv-final .bracket-lane-cards > .match-card:nth-child(1) {
+      top: 290px;
+    }
+
+    /* 3rd place */
+    .tv-final .bracket-lane-cards > .match-card:nth-child(2) {
+      top: 396px;
+    }
+
+    .match-card {
+      width: 148px !important;
+      height: 76px !important;
+      min-height: 76px !important;
+      max-height: 76px !important;
+      padding: 4px 5px !important;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .match-card.live-match {
+      border: 2px solid #1a73e8;
+      background: #eef6ff;
+    }
+
+    .match-card.complete-match {
+      border: 1px solid #e0c24d;
+      background: #fff9d9;
+    }
+
+    .match-head {
+      height: 20px !important;
+      margin-bottom: 2px !important;
+      gap: 4px !important;
+      align-items: center !important;
+    }
+
+    .match-head-left {
+      min-width: 0;
+    }
+
+    .match-head-right {
+      max-width: 62% !important;
+      min-width: 0;
+    }
+
+    .match-num {
+      font-size: 8px !important;
+      line-height: 1 !important;
+      white-space: nowrap;
+    }
+
+    .match-status-wrap {
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .match-status {
+      min-height: 13px !important;
+      padding: 0 4px !important;
+      font-size: 7px !important;
+      line-height: 1 !important;
+    }
+
+    .match-live-time {
+      font-size: 7px !important;
+      margin-left: 3px !important;
+      line-height: 1 !important;
+    }
+
+    .match-scheduled-time {
+      margin-top: 1px !important;
+      font-size: 7px !important;
+      line-height: 1 !important;
+    }
+
+    .team-row {
+      gap: 4px !important;
+      padding: 2px 0 !important;
+      min-height: 0 !important;
+      border-top: 1px solid #eee;
+    }
+
+    .team-row:first-of-type {
+      border-top: none;
+    }
+
+    .team-main {
+      gap: 4px !important;
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .team-flag,
+    .team-flag-text,
+    .team-flag-placeholder {
+      width: 15px !important;
+      height: 11px !important;
+      border-radius: 2px;
+      flex: 0 0 auto;
+    }
+
+    .team-flag-text {
+      font-size: 10px !important;
+    }
+
+    .team-text {
+      gap: 0 !important;
+      min-width: 0;
+    }
+
+    .team-name {
+      font-size: 8px !important;
+      line-height: 1.05 !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-line {
+      font-size: 7px !important;
+      line-height: 1.05 !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .score-box {
+      min-width: 11px !important;
+      font-size: 10px !important;
+      line-height: 1 !important;
+      font-weight: bold;
+    }
+
+    .r32-tv-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1388px;
+      height: 656px;
+      z-index: 1;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .r32-tv-line {
+      fill: none;
+      stroke: #bdbdbd;
+      stroke-width: 1.5;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+    }
+
+    .empty-state {
+      width: 100%;
+      height: 656px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      border: 1px dashed #ccc;
+      border-radius: 6px;
+      background: #fafafa;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .is-hidden {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="topbar"></div>
-
-  <div class="page-wrap">
-    <div class="bracket-wrap">
-      <div id="lastUpdatedText" class="bracket-last-updated">Last Updated: —</div>
-
-      <button id="bracketLeftBtn" class="bracket-nav-btn bracket-nav-btn-left is-hidden" onclick="scrollBracket(-1)" aria-label="Scroll bracket left" title="Previous rounds">‹</button>
-      <button id="bracketRightBtn" class="bracket-nav-btn bracket-nav-btn-right" onclick="scrollBracket(1)" aria-label="Scroll bracket right" title="Next rounds">›</button>
-
-      <div id="bracketStage" class="bracket-stage">
-        <div id="bracketApp"></div>
-      </div>
-    </div>
+  <div class="dashboard">
+    <div id="lastUpdatedText" class="last-update">Last Updated: —</div>
+    <div id="bracketApp"></div>
   </div>
 
   <script>
@@ -40,28 +402,7 @@
   <script src="../WC_common/R32_matchCards.js"></script>
 
   <script>
-    const BRACKET_GAME_ID =
-      typeof GAME_ID !== "undefined"
-        ? GAME_ID
-        : (window.GAME_ID || "WC2026_DEV");
-
-    const SESSION_KEY = "session_" + BRACKET_GAME_ID;
-    const userId = localStorage.getItem(SESSION_KEY);
-
-    if (!userId) {
-      console.warn("[R32 Bracket Auth] Missing session", {
-        BRACKET_GAME_ID,
-        SESSION_KEY,
-        localStorageKeys: Object.keys(localStorage)
-      });
-      window.location.href = "index.html";
-    }
-
     const R32_REFRESH_MS = 10 * 60 * 1000;
-    const R32_IDLE_MS = 20 * 60 * 1000;
-
-    const DESKTOP_STEP_PX = 310;
-    const MOBILE_STEP_PX = 176;
 
     const R32_MAPPING_COLLECTION = "R32mapping";
     const R32_MAPPING_DOC_ID = "main";
@@ -69,22 +410,9 @@
     const LIVE_BRACKET_DOC_ID = "knockoutBracket";
 
     let refreshRuntime = null;
-    let idleRuntime = null;
-    let currentBracketWindow = 0;
-    let scrollSyncTimer = null;
-    let boundScrollEl = null;
 
-    function isMobileBracketView() {
-      return window.matchMedia("(max-width: 640px)").matches;
-    }
-
-    function getBracketStepPx() {
-      return isMobileBracketView() ? MOBILE_STEP_PX : DESKTOP_STEP_PX;
-    }
-
-    function getMaxBracketWindow() {
-      return isMobileBracketView() ? 3 : 2;
-    }
+    let cachedR32MappingData = null;
+    let cachedR32MappingLoaded = false;
 
     function getDbInstance() {
       try {
@@ -94,211 +422,8 @@
       } catch (err) {
         console.error("Failed to create Firestore instance:", err);
       }
+
       return null;
-    }
-
-    function getBracketScrollEl() {
-      return document.querySelector("#bracketApp .bracket-scroll");
-    }
-
-    function getActiveLaneClasses() {
-      if (isMobileBracketView()) {
-        const mobileMap = [
-          ["lane-r32", "lane-r16"],
-          ["lane-r16", "lane-qf"],
-          ["lane-qf", "lane-sf"],
-          ["lane-sf", "lane-final"]
-        ];
-        return mobileMap[currentBracketWindow] || mobileMap[0];
-      }
-
-      const desktopMap = [
-        ["lane-r32", "lane-r16", "lane-qf"],
-        ["lane-r16", "lane-qf", "lane-sf"],
-        ["lane-qf", "lane-sf", "lane-final"]
-      ];
-      return desktopMap[currentBracketWindow] || desktopMap[0];
-    }
-
-    function clampBracketWindow(value) {
-      return Math.max(0, Math.min(getMaxBracketWindow(), value));
-    }
-
-    function applyBracketWindowClass() {
-      document.body.classList.remove(
-        "bracket-window-0",
-        "bracket-window-1",
-        "bracket-window-2",
-        "bracket-window-3"
-      );
-
-      document.body.classList.add("bracket-window-" + currentBracketWindow);
-      document.body.classList.toggle("bracket-mobile-view", isMobileBracketView());
-    }
-
-    function updateBracketPaneHeight() {
-      const scrollEl = getBracketScrollEl();
-      if (!scrollEl) return;
-
-      let maxHeight = 0;
-
-      getActiveLaneClasses().forEach(function (cls) {
-        const laneEl = scrollEl.querySelector("." + cls);
-        if (!laneEl) return;
-        maxHeight = Math.max(maxHeight, laneEl.scrollHeight);
-      });
-
-      scrollEl.style.height = maxHeight > 0 ? maxHeight + "px" : "";
-    }
-
-    function setBracketWindow(index) {
-      currentBracketWindow = clampBracketWindow(index);
-      applyBracketWindowClass();
-      requestAnimationFrame(updateBracketPaneHeight);
-    }
-
-    function updateBracketNavButtons() {
-      const scrollEl = getBracketScrollEl();
-      const leftBtn = document.getElementById("bracketLeftBtn");
-      const rightBtn = document.getElementById("bracketRightBtn");
-
-      if (!leftBtn || !rightBtn) return;
-
-      if (!scrollEl) {
-        leftBtn.classList.add("is-hidden");
-        rightBtn.classList.add("is-hidden");
-        return;
-      }
-
-      const maxScroll = scrollEl.scrollWidth - scrollEl.clientWidth;
-      const scrollLeft = scrollEl.scrollLeft;
-
-      if (maxScroll <= 2) {
-        leftBtn.classList.add("is-hidden");
-        rightBtn.classList.add("is-hidden");
-        return;
-      }
-
-      leftBtn.classList.toggle("is-hidden", scrollLeft <= 2);
-      rightBtn.classList.toggle("is-hidden", scrollLeft >= maxScroll - 2);
-    }
-
-    function syncBracketWindowFromScroll() {
-      const scrollEl = getBracketScrollEl();
-      if (!scrollEl) return;
-
-      const nextWindow = clampBracketWindow(Math.round(scrollEl.scrollLeft / getBracketStepPx()));
-
-      if (nextWindow !== currentBracketWindow) {
-        setBracketWindow(nextWindow);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-    }
-
-    function handleBracketScroll() {
-      updateBracketNavButtons();
-
-      if (scrollSyncTimer) clearTimeout(scrollSyncTimer);
-
-      scrollSyncTimer = setTimeout(function () {
-        syncBracketWindowFromScroll();
-      }, 120);
-    }
-
-    function attachBracketScrollListener() {
-      const scrollEl = getBracketScrollEl();
-      if (!scrollEl) return;
-
-      if (boundScrollEl && boundScrollEl !== scrollEl) {
-        boundScrollEl.removeEventListener("scroll", handleBracketScroll);
-      }
-
-      if (boundScrollEl !== scrollEl) {
-        scrollEl.addEventListener("scroll", handleBracketScroll, { passive: true });
-        boundScrollEl = scrollEl;
-      }
-    }
-
-    function scrollBracket(direction) {
-      const scrollEl = getBracketScrollEl();
-      if (!scrollEl) return;
-
-      const nextWindow = clampBracketWindow(currentBracketWindow + direction);
-
-      setBracketWindow(nextWindow);
-
-      scrollEl.scrollTo({
-        left: nextWindow * getBracketStepPx(),
-        behavior: "smooth"
-      });
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      setTimeout(function () {
-        updateBracketNavButtons();
-        updateBracketPaneHeight();
-      }, 350);
-    }
-
-    function syncBracketToViewport() {
-      const scrollEl = getBracketScrollEl();
-
-      currentBracketWindow = clampBracketWindow(currentBracketWindow);
-      applyBracketWindowClass();
-
-      if (scrollEl) {
-        scrollEl.scrollLeft = currentBracketWindow * getBracketStepPx();
-      }
-
-      updateBracketNavButtons();
-      requestAnimationFrame(updateBracketPaneHeight);
-    }
-
-    function goToGroupStage() {
-      window.location.href = "landing.html";
-    }
-
-    function goToR32Mapping() {
-      window.location.href = "R32_mapping.html";
-    }
-
-    function logout() {
-      localStorage.removeItem(SESSION_KEY);
-      window.location.href = "index.html";
-    }
-
-    function buildTopbar() {
-      if (
-        window.R32Utils &&
-        typeof R32Utils.renderTopbar === "function" &&
-        typeof R32Utils.makeButtonHtml === "function"
-      ) {
-        const actionsHtml = [
-          R32Utils.makeButtonHtml({ label: "Group Stage", onClick: "goToGroupStage()" }),
-          R32Utils.makeButtonHtml({ label: "Team Mapping", onClick: "goToR32Mapping()" }),
-          R32Utils.makeButtonHtml({ label: "Logout", onClick: "logout()" })
-        ].join("");
-
-        R32Utils.renderTopbar({
-          title: "Knockout Stage Bracket",
-          actionsHtml
-        });
-
-        return;
-      }
-
-      const topbar = document.getElementById("topbar");
-      if (!topbar) return;
-
-      topbar.innerHTML = `
-        <div class="r32-topbar-inner">
-          <div class="r32-topbar-title">Knockout Stage Bracket</div>
-          <div class="r32-topbar-actions">
-            <button class="r32-btn" onclick="goToGroupStage()">Group Stage</button>
-            <button class="r32-btn" onclick="goToR32Mapping()">Team Mapping</button>
-            <button class="r32-btn" onclick="logout()">Logout</button>
-          </div>
-        </div>`;
     }
 
     function renderEmptyState(message) {
@@ -306,7 +431,6 @@
       if (!app) return;
 
       app.innerHTML = `<div class="empty-state">${message}</div>`;
-      updateBracketNavButtons();
     }
 
     function cloneJson(value) {
@@ -319,13 +443,14 @@
         if (value == null) continue;
         if (String(value).trim() !== "") return value;
       }
+
       return null;
     }
 
     function normalizePlacementKey(value) {
       return String(value || "")
         .trim()
-        .replace(/ /g, " ")
+        .replace(/\u00A0/g, " ")
         .replace(/\s+/g, " ")
         .replace(/\s*\/\s*/g, "/")
         .toUpperCase();
@@ -533,6 +658,7 @@
 
     function seedLocalLiveFromMergedMatches(liveDocData, mergedMatches) {
       const safeLive = cloneJson(liveDocData) || {};
+
       safeLive.matches =
         safeLive.matches && typeof safeLive.matches === "object"
           ? safeLive.matches
@@ -588,8 +714,11 @@
           match.player1Name,
           match.playerName1,
           match.slot1Player,
+          match.slot1PlayerName,
           match.team1Player,
-          match.homePlayer
+          match.team1PlayerName,
+          match.homePlayer,
+          match.homePlayerName
         );
 
         liveMatch.player2 = firstNonEmpty(
@@ -599,9 +728,15 @@
           match.player2Name,
           match.playerName2,
           match.slot2Player,
+          match.slot2PlayerName,
           match.team2Player,
-          match.awayPlayer
+          match.team2PlayerName,
+          match.awayPlayer,
+          match.awayPlayerName
         );
+
+        liveMatch.player1Name = firstNonEmpty(liveMatch.player1Name, liveMatch.player1);
+        liveMatch.player2Name = firstNonEmpty(liveMatch.player2Name, liveMatch.player2);
 
         liveMatch.score1 = firstNonEmpty(
           match.score1,
@@ -647,6 +782,7 @@
 
     function fillLocalTeamsFromMapping(localLiveData, mappingData) {
       const safeLive = cloneJson(localLiveData) || {};
+
       safeLive.matches =
         safeLive.matches && typeof safeLive.matches === "object"
           ? safeLive.matches
@@ -746,6 +882,7 @@
 
             if (isCompletedWinnerMatch(prevMatch)) {
               const winnerPlayer = getPlayerForTeamInMatch(prevMatch, prevMatch.winner);
+
               if (winnerPlayer) {
                 setSidePlayer(match, 1, winnerPlayer);
                 changed = true;
@@ -769,6 +906,7 @@
 
             if (isCompletedWinnerMatch(prevMatch)) {
               const winnerPlayer = getPlayerForTeamInMatch(prevMatch, prevMatch.winner);
+
               if (winnerPlayer) {
                 setSidePlayer(match, 2, winnerPlayer);
                 changed = true;
@@ -829,21 +967,26 @@
           liveMatch.playerName1,
           liveMatch.player1,
           liveMatch.slot1Player,
+          liveMatch.slot1PlayerName,
           liveMatch.team1Player,
-          liveMatch.homePlayer
+          liveMatch.team1PlayerName,
+          liveMatch.homePlayer,
+          liveMatch.homePlayerName
         );
-
-        if (player1) setSidePlayer(match, 1, player1);
 
         const player2 = firstNonEmpty(
           liveMatch.player2Name,
           liveMatch.playerName2,
           liveMatch.player2,
           liveMatch.slot2Player,
+          liveMatch.slot2PlayerName,
           liveMatch.team2Player,
-          liveMatch.awayPlayer
+          liveMatch.team2PlayerName,
+          liveMatch.awayPlayer,
+          liveMatch.awayPlayerName
         );
 
+        if (player1) setSidePlayer(match, 1, player1);
         if (player2) setSidePlayer(match, 2, player2);
 
         if (liveMatch.score1 != null) {
@@ -879,20 +1022,23 @@
       return list;
     }
 
-    async function getR32MappingData(db) {
+    async function getCachedR32MappingData(db) {
+      if (cachedR32MappingLoaded) return cachedR32MappingData || {};
+
       const snap = await db
         .collection(R32_MAPPING_COLLECTION)
         .doc(R32_MAPPING_DOC_ID)
         .get();
 
-      const mappingData = snap.exists ? (snap.data() || {}) : {};
+      cachedR32MappingData = snap.exists ? (snap.data() || {}) : {};
+      cachedR32MappingLoaded = true;
 
-      console.log("[R32 Bracket] Loaded R32mapping", {
-        placementLookup: buildPlacementToTeamLookup(mappingData),
-        playerLookup: buildTeamToPlayerLookup(mappingData)
+      console.log("[R32 Dashboard] Loaded R32mapping once", {
+        placementLookup: buildPlacementToTeamLookup(cachedR32MappingData),
+        playerLookup: buildTeamToPlayerLookup(cachedR32MappingData)
       });
 
-      return mappingData;
+      return cachedR32MappingData;
     }
 
     async function synchronizeBracketForDisplay(db, context) {
@@ -901,7 +1047,7 @@
           ? context.mergedMatches
           : [];
 
-      const mappingData = await getR32MappingData(db);
+      const mappingData = await getCachedR32MappingData(db);
 
       const liveSnap = await db
         .collection(LIVE_COLLECTION)
@@ -924,6 +1070,113 @@
       return nextContext;
     }
 
+    function buildConnectorPathLeft(fromCol, fromY1, fromY2, toCol, toY) {
+      const colW = 148;
+      const gap = 7;
+      const pitch = colW + gap;
+
+      const xFrom = fromCol * pitch + colW;
+      const xTo = toCol * pitch;
+      const xMid = (xFrom + xTo) / 2;
+
+      return `
+        M ${xFrom} ${fromY1}
+        H ${xMid}
+        M ${xFrom} ${fromY2}
+        H ${xMid}
+        M ${xMid} ${fromY1}
+        V ${fromY2}
+        M ${xMid} ${toY}
+        H ${xTo}
+      `;
+    }
+
+    function buildConnectorPathRight(fromCol, fromY1, fromY2, toCol, toY) {
+      const colW = 148;
+      const gap = 7;
+      const pitch = colW + gap;
+
+      const xFrom = fromCol * pitch;
+      const xTo = toCol * pitch + colW;
+      const xMid = (xFrom + xTo) / 2;
+
+      return `
+        M ${xFrom} ${fromY1}
+        H ${xMid}
+        M ${xFrom} ${fromY2}
+        H ${xMid}
+        M ${xMid} ${fromY1}
+        V ${fromY2}
+        M ${xMid} ${toY}
+        H ${xTo}
+      `;
+    }
+
+    function buildStraightConnectorLeft(fromCol, fromY, toCol) {
+      const colW = 148;
+      const gap = 7;
+      const pitch = colW + gap;
+
+      const xFrom = fromCol * pitch + colW;
+      const xTo = toCol * pitch;
+
+      return `M ${xFrom} ${fromY} H ${xTo}`;
+    }
+
+    function buildStraightConnectorRight(fromCol, fromY, toCol) {
+      const colW = 148;
+      const gap = 7;
+      const pitch = colW + gap;
+
+      const xFrom = fromCol * pitch;
+      const xTo = toCol * pitch + colW;
+
+      return `M ${xFrom} ${fromY} H ${xTo}`;
+    }
+
+    function drawTvBracketLines() {
+      const app = document.getElementById("bracketApp");
+      if (!app) return;
+
+      app.querySelector(".r32-tv-lines")?.remove();
+
+      const paths = [];
+
+      /* Left side */
+      paths.push(buildConnectorPathLeft(0, 48, 128, 1, 88));
+      paths.push(buildConnectorPathLeft(0, 208, 288, 1, 248));
+      paths.push(buildConnectorPathLeft(0, 368, 448, 1, 408));
+      paths.push(buildConnectorPathLeft(0, 528, 608, 1, 568));
+
+      paths.push(buildConnectorPathLeft(1, 88, 248, 2, 168));
+      paths.push(buildConnectorPathLeft(1, 408, 568, 2, 488));
+
+      paths.push(buildConnectorPathLeft(2, 168, 488, 3, 328));
+      paths.push(buildStraightConnectorLeft(3, 328, 4));
+
+      /* Right side */
+      paths.push(buildConnectorPathRight(8, 48, 128, 7, 88));
+      paths.push(buildConnectorPathRight(8, 208, 288, 7, 248));
+      paths.push(buildConnectorPathRight(8, 368, 448, 7, 408));
+      paths.push(buildConnectorPathRight(8, 528, 608, 7, 568));
+
+      paths.push(buildConnectorPathRight(7, 88, 248, 6, 168));
+      paths.push(buildConnectorPathRight(7, 408, 568, 6, 488));
+
+      paths.push(buildConnectorPathRight(6, 168, 488, 5, 328));
+      paths.push(buildStraightConnectorRight(5, 328, 4));
+
+      const svgHtml = `
+        <svg class="r32-tv-lines" viewBox="0 0 1388 656" preserveAspectRatio="none" aria-hidden="true">
+          ${paths.map(function (d) {
+            return `<path class="r32-tv-line" d="${d}"></path>`;
+          }).join("")}
+        </svg>
+      `;
+
+      app.insertAdjacentHTML("beforeend", svgHtml);
+    }
+
     function renderBracket(context) {
       const app = document.getElementById("bracketApp");
       const lastUpdatedText = document.getElementById("lastUpdatedText");
@@ -940,48 +1193,54 @@
 
       const boardSpec = [
         {
-          title: "Round of 32",
-          laneClass: "lane-r32",
-          matchNumbers: [74, 77, 73, 75, 83, 84, 81, 82, 76, 78, 79, 80, 86, 88, 85, 87]
+          title: "",
+          laneClass: "tv-left-r32",
+          matchNumbers: [74, 77, 73, 75, 83, 84, 81, 82]
         },
         {
-          title: "Round of 16",
-          laneClass: "lane-r16",
-          matchNumbers: [89, 90, 93, 94, 91, 92, 95, 96]
+          title: "",
+          laneClass: "tv-left-r16",
+          matchNumbers: [89, 90, 93, 94]
         },
         {
-          title: "Quarter-finals",
-          laneClass: "lane-qf",
-          matchNumbers: [97, 98, 99, 100]
+          title: "",
+          laneClass: "tv-left-qf",
+          matchNumbers: [97, 98]
         },
         {
-          title: "Semi-finals",
-          laneClass: "lane-sf",
-          matchNumbers: [101, 102]
+          title: "",
+          laneClass: "tv-left-sf",
+          matchNumbers: [101]
         },
         {
-          title: "Final",
-          laneClass: "lane-final",
+          title: "",
+          laneClass: "tv-final",
           matchNumbers: [104, 103]
+        },
+        {
+          title: "",
+          laneClass: "tv-right-sf",
+          matchNumbers: [102]
+        },
+        {
+          title: "",
+          laneClass: "tv-right-qf",
+          matchNumbers: [99, 100]
+        },
+        {
+          title: "",
+          laneClass: "tv-right-r16",
+          matchNumbers: [91, 92, 95, 96]
+        },
+        {
+          title: "",
+          laneClass: "tv-right-r32",
+          matchNumbers: [76, 78, 79, 80, 86, 88, 85, 87]
         }
       ];
 
-      console.log("[R32 Bracket] mergedMatches with players", mergedMatches.map(m => ({
-        match: getMatchNumberFromAny(m),
-        team1: m.team1 || m.displayTeam1 || m.slot1Team || m.homeTeam,
-        player1: m.player1Name || m.playerName1 || m.player1 || m.team1Player || m.homePlayer,
-        team2: m.team2 || m.displayTeam2 || m.slot2Team || m.awayTeam,
-        player2: m.player2Name || m.playerName2 || m.player2 || m.team2Player || m.awayPlayer
-      })));
-
       app.innerHTML = R32MatchCards.buildBracketBoardHtml(boardSpec, mergedMatches);
-
-      applyBracketWindowClass();
-      attachBracketScrollListener();
-
-      requestAnimationFrame(function () {
-        syncBracketToViewport();
-      });
+      drawTvBracketLines();
 
       if (lastUpdatedText) {
         lastUpdatedText.textContent =
@@ -990,9 +1249,6 @@
     }
 
     function startPage() {
-      buildTopbar();
-      setBracketWindow(0);
-
       if (!window.R32matches || !Array.isArray(window.R32matches) || !window.R32matches.length) {
         renderEmptyState("matches.js loaded, but window.R32matches is missing or empty.");
         return;
@@ -1020,17 +1276,6 @@
         return;
       }
 
-      idleRuntime = R32Utils.installIdleTimeout({
-        sessionKey: SESSION_KEY,
-        redirectUrl: "index.html",
-        idleMs: R32_IDLE_MS,
-        checkMs: 60 * 1000
-      });
-
-      window.addEventListener("resize", function () {
-        syncBracketToViewport();
-      });
-
       refreshRuntime = R32Utils.startR32PageRefresh({
         db: dbInstance,
         syncUrl: "",
@@ -1044,14 +1289,14 @@
             const nextContext = await synchronizeBracketForDisplay(dbInstance, context || {});
             renderBracket(nextContext);
           } catch (err) {
-            console.error("R32 bracket display sync error:", err);
+            console.error("R32 dashboard display sync error:", err);
             renderBracket(context || {});
           }
         },
 
         onError: function (err) {
-          console.error("R32 bracket refresh error:", err);
-          renderEmptyState("Failed to load knockout bracket.");
+          console.error("R32 dashboard refresh error:", err);
+          renderEmptyState("Failed to load knockout dashboard.");
         }
       });
     }
